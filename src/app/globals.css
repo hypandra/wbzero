@@ -74,6 +74,24 @@
   }
 }
 
+/* Star twinkle animations */
+@keyframes twinkle-bright {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.55; }
+}
+@keyframes twinkle-mid {
+  0%, 100% { opacity: 0.07; }
+  50% { opacity: 0.32; }
+}
+@keyframes twinkle-dim {
+  0%, 100% { opacity: 0.04; }
+  50% { opacity: 0.18; }
+}
+
+.star-bright { animation: twinkle-bright var(--star-duration) ease-in-out infinite both; }
+.star-mid    { animation: twinkle-mid    var(--star-duration) ease-in-out infinite both; }
+.star-dim    { animation: twinkle-dim    var(--star-duration) ease-in-out infinite both; }
+
 /* Prevent prose margins on resizable image wrapper */
 .prose .wbz-resizable-image-wrapper {
   margin: 1em 0;
