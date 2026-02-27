@@ -20,6 +20,14 @@ export interface ChangeEntry {
 
 export const UPDATES: ChangeEntry[] = [
   {
+    id: '2026-02-26-static-badge',
+    title: 'Lighter Curiosity Build badge',
+    summary: 'The "A Curiosity Build" badge in the corner is now a simple image link instead of loading external code. Faster pages, same branding.',
+    devNote: 'Replaced external JS web component with a static SVG badge and link. Eliminates Shadow DOM, html2canvas, font loading, and API calls on every page load.',
+    publishedAt: '2026-02-26',
+    tags: ['Performance', 'Infra'],
+  },
+  {
     id: '2026-02-06-resizable-images',
     title: 'Resizable images',
     summary: 'Drag corner handles to resize illustrations in the editor. Your chosen size persists across sessions.',
