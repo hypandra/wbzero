@@ -94,6 +94,7 @@ Verify: you should see a `node_modules/` directory and no errors in the output.
 3. Once your project is created, go to **Project Settings > Database**
 4. Copy the **Connection string (URI)** — it looks like: `postgresql://postgres.[your-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
 5. **Use port 5432** (session mode), not 6543 (transaction mode). BetterAuth needs session mode for its auth queries
+6. If your database password contains special characters (`@`, `:`, `/`, `%`, `#`), you need to URL-encode them in the connection string. For example, `p@ss:word` becomes `p%40ss%3Aword`
 
 ## Step 4: Set up your database tables
 
@@ -123,14 +124,16 @@ Copy the example file:
 cp .env.example .env.local
 ```
 
-Then fill in the values. Here's what each one does:
+Then fill in the values. Here's what each one does.
+
+**Secrets hygiene:** Never paste real API keys, database URLs, or passwords into AI chat prompts, pull request descriptions, issue comments, or screenshots. Keep secrets in `.env.local` only — it's gitignored and won't be committed.
 
 ### Required (the app won't start without these)
 
 | Variable | What it is | How to get it |
 |---|---|---|
 | `DATABASE_URL` | Your Supabase connection string | From Step 3 above |
-| `DATABASE_SSL` | SSL mode for DB connection | Set to `false` if you don't have the SSL cert (see Step 6) |
+| `DATABASE_SSL` | Optional SSL override (see Step 6) | Set to `false` for local dev without the SSL cert |
 | `BETTER_AUTH_SECRET` | Random secret for session encryption | Run `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | Your local URL | `http://localhost:3000` |
 | `NEXT_PUBLIC_BETTER_AUTH_URL` | Same, but for the browser | `http://localhost:3000` |
@@ -166,9 +169,9 @@ Daniel will provide these — they use the shared BunnyCDN storage zone:
 
 Your `DATABASE_URL` points to a remote Supabase server, so the app needs SSL to connect. You have two options:
 
-**Option A (easiest for local dev):** Add `DATABASE_SSL=false` to your `.env.local`. This disables SSL verification for your local dev server. This is fine because your Supabase connection is already encrypted at the transport level by default.
+**Option A (local dev only):** Add `DATABASE_SSL=false` to your `.env.local`. This disables certificate verification — the connection to Supabase is still encrypted, but your app won't verify the server's identity. Fine for local development, but don't use this in production.
 
-**Option B (matches production):** Download the Supabase CA certificate:
+**Option B (recommended, matches production):** Download the Supabase CA certificate:
 - Go to your Supabase dashboard > Project Settings > Database
 - Download the CA certificate
 - Save it as `prod-ca-2021.crt` in the project root

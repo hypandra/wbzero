@@ -2,6 +2,11 @@
 -- Creates all wbz_* tables from scratch (for new Supabase projects)
 -- This is a combined migration — do NOT run on the shared production DB
 -- Safe to re-run: uses IF NOT EXISTS and guards throughout
+--
+-- NOTE: This migration does not configure Row Level Security (RLS) or
+-- Supabase API policies. All database access is server-side only (via
+-- DATABASE_URL in Next.js API routes). Do not expose these tables through
+-- Supabase client-side access without adding RLS policies first.
 
 BEGIN;
 
@@ -170,10 +175,12 @@ CREATE TABLE IF NOT EXISTS wbz_user_theme (
 );
 
 -- Add foreign keys for active_theme_id (now that theme tables exist)
--- Guarded so re-runs don't fail
+-- Guarded by table + constraint name so re-runs don't fail
 DO $$ BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'fk_wbz_project_active_theme'
+    SELECT 1 FROM pg_constraint c
+    JOIN pg_class t ON c.conrelid = t.oid
+    WHERE t.relname = 'wbz_project' AND c.conname = 'fk_wbz_project_active_theme'
   ) THEN
     ALTER TABLE wbz_project ADD CONSTRAINT fk_wbz_project_active_theme
       FOREIGN KEY (active_theme_id) REFERENCES wbz_project_theme(id) ON DELETE SET NULL;
@@ -182,7 +189,9 @@ END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'fk_wbz_user_active_theme'
+    SELECT 1 FROM pg_constraint c
+    JOIN pg_class t ON c.conrelid = t.oid
+    WHERE t.relname = 'wbz_user' AND c.conname = 'fk_wbz_user_active_theme'
   ) THEN
     ALTER TABLE wbz_user ADD CONSTRAINT fk_wbz_user_active_theme
       FOREIGN KEY (active_theme_id) REFERENCES wbz_user_theme(id) ON DELETE SET NULL;
@@ -194,7 +203,7 @@ END $$;
 -- ============================================================
 
 CREATE INDEX IF NOT EXISTS idx_wbz_session_user_id ON wbz_session("userId");
-CREATE INDEX IF NOT EXISTS idx_wbz_session_token ON wbz_session(token);
+-- idx_wbz_session_token not needed: UNIQUE constraint on token already creates an index
 CREATE INDEX IF NOT EXISTS idx_wbz_account_user_id ON wbz_account("userId");
 CREATE INDEX IF NOT EXISTS idx_wbz_project_user_id ON wbz_project(user_id);
 CREATE INDEX IF NOT EXISTS idx_wbz_chapter_project_id ON wbz_chapter(project_id);
