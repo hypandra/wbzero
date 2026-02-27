@@ -8,7 +8,7 @@ import { LeftNavTree } from '@/components/layout/left-nav-tree'
 import { RightContextPanel } from '@/components/layout/right-context-panel'
 import { ProjectThemeProvider } from '@/components/theme/project-theme-provider'
 import { Loading } from '@/components/ui/spinner'
-import { PanelRight, Layers, ImageIcon, Sparkles, Palette } from 'lucide-react'
+import { PanelRight, Layers, ImageIcon, Sparkles, Palette, UserCircle } from 'lucide-react'
 
 export default function AppLayout({
   children,
@@ -75,6 +75,13 @@ export default function AppLayout({
               >
                 <PanelRight className="w-5 h-5" />
               </button>
+              <a
+                href="/profile"
+                title="Profile"
+                className="p-1.5 rounded transition-colors text-[var(--theme-muted)] hover:text-[var(--theme-fg)]"
+              >
+                <UserCircle className="w-5 h-5" />
+              </a>
               <span className="text-sm text-[var(--theme-muted)]">{session.user.email}</span>
               <button
                 onClick={async () => {
