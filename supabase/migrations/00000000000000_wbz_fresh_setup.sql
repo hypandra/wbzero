@@ -1,6 +1,12 @@
 -- WBZero fresh database setup
 -- Creates all wbz_* tables from scratch (for new Supabase projects)
 -- This is a combined migration — do NOT run on the shared production DB
+-- Safe to re-run: uses IF NOT EXISTS and guards throughout
+
+BEGIN;
+
+-- Ensure gen_random_uuid() is available
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ============================================================
 -- BetterAuth tables
@@ -13,17 +19,17 @@ CREATE TABLE IF NOT EXISTS wbz_user (
   name TEXT,
   image TEXT,
   active_theme_id TEXT,
-  "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wbz_session (
   id TEXT PRIMARY KEY,
   "userId" TEXT NOT NULL REFERENCES wbz_user(id) ON DELETE CASCADE,
-  "expiresAt" TIMESTAMP NOT NULL,
+  "expiresAt" TIMESTAMPTZ NOT NULL,
   token TEXT NOT NULL UNIQUE,
-  "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "ipAddress" TEXT,
   "userAgent" TEXT
 );
@@ -35,21 +41,21 @@ CREATE TABLE IF NOT EXISTS wbz_account (
   "providerId" TEXT NOT NULL,
   "accessToken" TEXT,
   "refreshToken" TEXT,
-  "accessTokenExpiresAt" TIMESTAMP,
-  "refreshTokenExpiresAt" TIMESTAMP,
+  "accessTokenExpiresAt" TIMESTAMPTZ,
+  "refreshTokenExpiresAt" TIMESTAMPTZ,
   scope TEXT,
   password TEXT,
-  "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wbz_verification (
   id TEXT PRIMARY KEY,
   identifier TEXT NOT NULL,
   value TEXT NOT NULL,
-  "expiresAt" TIMESTAMP NOT NULL,
-  "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  "expiresAt" TIMESTAMPTZ NOT NULL,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================================
@@ -61,8 +67,8 @@ CREATE TABLE IF NOT EXISTS wbz_project (
   user_id TEXT NOT NULL REFERENCES wbz_user(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   active_theme_id TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wbz_chapter (
@@ -71,8 +77,8 @@ CREATE TABLE IF NOT EXISTS wbz_chapter (
   title TEXT NOT NULL,
   content TEXT NOT NULL DEFAULT '',
   position INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wbz_image (
@@ -86,7 +92,7 @@ CREATE TABLE IF NOT EXISTS wbz_image (
   parent_id TEXT REFERENCES wbz_image(id),
   refinement_prompt TEXT,
   deleted_at TIMESTAMPTZ DEFAULT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wbz_prompt (
@@ -103,7 +109,7 @@ CREATE TABLE IF NOT EXISTS wbz_chapter_tag (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   chapter_id TEXT NOT NULL REFERENCES wbz_chapter(id) ON DELETE CASCADE,
   tag_name TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(chapter_id, tag_name)
 );
 
@@ -151,7 +157,7 @@ CREATE TABLE IF NOT EXISTS wbz_project_theme (
   name TEXT NOT NULL,
   prompt TEXT,
   theme JSONB NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wbz_user_theme (
@@ -160,15 +166,28 @@ CREATE TABLE IF NOT EXISTS wbz_user_theme (
   name TEXT NOT NULL,
   prompt TEXT,
   theme JSONB NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Add foreign keys for active_theme_id (now that theme tables exist)
-ALTER TABLE wbz_project ADD CONSTRAINT fk_wbz_project_active_theme
-  FOREIGN KEY (active_theme_id) REFERENCES wbz_project_theme(id) ON DELETE SET NULL;
+-- Guarded so re-runs don't fail
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'fk_wbz_project_active_theme'
+  ) THEN
+    ALTER TABLE wbz_project ADD CONSTRAINT fk_wbz_project_active_theme
+      FOREIGN KEY (active_theme_id) REFERENCES wbz_project_theme(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
-ALTER TABLE wbz_user ADD CONSTRAINT fk_wbz_user_active_theme
-  FOREIGN KEY (active_theme_id) REFERENCES wbz_user_theme(id) ON DELETE SET NULL;
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'fk_wbz_user_active_theme'
+  ) THEN
+    ALTER TABLE wbz_user ADD CONSTRAINT fk_wbz_user_active_theme
+      FOREIGN KEY (active_theme_id) REFERENCES wbz_user_theme(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- ============================================================
 -- Indexes
@@ -209,8 +228,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Drop and recreate trigger (no IF NOT EXISTS for triggers in PostgreSQL)
+DROP TRIGGER IF EXISTS trg_wbz_image_soft_delete ON wbz_image;
 CREATE TRIGGER trg_wbz_image_soft_delete
   BEFORE UPDATE ON wbz_image
   FOR EACH ROW
   WHEN (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL)
   EXECUTE FUNCTION wbz_image_soft_delete_detach_children();
+
+COMMIT;
