@@ -1,6 +1,6 @@
 import { renderPromptTemplate } from '@/lib/prompts'
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY!
 
 /**
  * Extract base64 data from a response part, handling multiple formats
@@ -123,23 +123,18 @@ function extractImageBufferFromResponse(data: any): Buffer | null {
 
 export async function generateImage(sourceText: string, promptTemplate: string): Promise<Buffer> {
   const renderedPrompt = renderPromptTemplate(promptTemplate, sourceText)
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.OPENROUTER_SITE_URL || 'https://wbzero.com',
-      'X-Title': process.env.OPENROUTER_APP_NAME || 'WBZero',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-image-1',
-      modalities: ['text', 'image'],
-      messages: [
-        {
-          role: 'user',
-          content: renderedPrompt,
-        },
-      ],
+      model: 'gpt-image-1',
+      prompt: renderedPrompt,
+      size: '1024x1024',
+      quality: 'low',
+      output_format: 'png',
     }),
   })
 
@@ -158,34 +153,19 @@ export async function generateImage(sourceText: string, promptTemplate: string):
 }
 
 export async function refineImage(imageBuffer: Buffer, refinementPrompt: string): Promise<Buffer> {
-  const base64 = imageBuffer.toString('base64')
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const formData = new FormData()
+  formData.append('image', new Blob([imageBuffer], { type: 'image/png' }), 'source.png')
+  formData.append('prompt', refinementPrompt)
+  formData.append('model', 'gpt-image-1')
+  formData.append('size', '1024x1024')
+  formData.append('quality', 'low')
+
+  const response = await fetch('https://api.openai.com/v1/images/edits', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.OPENROUTER_SITE_URL || 'https://wbzero.com',
-      'X-Title': process.env.OPENROUTER_APP_NAME || 'WBZero',
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
     },
-    body: JSON.stringify({
-      model: 'openai/gpt-image-1',
-      modalities: ['text', 'image'],
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              image: { data: base64, mime_type: 'image/png' },
-            },
-            {
-              type: 'text',
-              text: refinementPrompt,
-            },
-          ],
-        },
-      ],
-    }),
+    body: formData,
   })
 
   if (!response.ok) {
