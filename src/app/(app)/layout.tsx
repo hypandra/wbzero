@@ -99,7 +99,7 @@ export default function AppLayout({
           <aside className="w-64 bg-[var(--theme-card)] border-r border-[var(--theme-border)] overflow-y-auto">
             <LeftNavTree />
           </aside>
-          <main className="flex-1 overflow-y-auto bg-[var(--theme-bg)]">
+          <main className="flex-1 overflow-y-auto">
             <div className="px-6 py-6">{children}</div>
           </main>
           <aside
