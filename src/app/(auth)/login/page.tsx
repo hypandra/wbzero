@@ -38,7 +38,7 @@ export default function LoginPage() {
       </svg>
       <div className="max-w-md w-full space-y-8 p-8 relative z-10">
         <div className="text-center">
-          <h1 className="text-5xl font-light tracking-wide">world builder zero</h1>
+          <h1 className="text-5xl font-light tracking-wide">WorldBuilder:Zero</h1>
         </div>
         <LoginForm />
         <p className="text-center text-sm text-muted-foreground">

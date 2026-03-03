@@ -3,7 +3,7 @@ import { ErrorAlertProvider } from '@/components/error-alert-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'WBZero',
+  title: 'WorldBuilder:Zero',
   description: 'Writing and art organization tool',
 }
 

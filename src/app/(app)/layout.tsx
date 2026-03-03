@@ -61,7 +61,7 @@ export default function AppLayout({
         <nav className="bg-[var(--theme-card)] border-b border-[var(--theme-border)] h-14">
           <div className="h-full px-4 flex justify-between items-center">
             <a href="/projects" className="text-xl font-bold">
-              world builder zero
+              WorldBuilder:Zero
             </a>
             <div className="flex items-center gap-4">
               <button
