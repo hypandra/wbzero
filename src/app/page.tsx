@@ -61,7 +61,7 @@ export default function HomePage() {
       </svg>
       <div className="max-w-md w-full space-y-8 p-8 text-center relative z-10">
         <div>
-          <h1 className="text-5xl font-light tracking-wide mb-8">WorldBuilder:Zero</h1>
+          <h1 className="text-5xl font-light tracking-wide font-orbitron mb-8">WorldBuilder:Zero</h1>
         </div>
         <div className="space-y-3">
           <Button asChild className="w-full opacity-75 hover:opacity-100 transition-opacity duration-500 bg-purple-900 hover:bg-purple-800 text-white border-purple-700">

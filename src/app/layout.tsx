@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
+import { Orbitron } from 'next/font/google'
 import { ErrorAlertProvider } from '@/components/error-alert-provider'
 import './globals.css'
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  variable: '--font-orbitron',
+})
 
 export const metadata: Metadata = {
   title: 'WorldBuilder:Zero',
@@ -13,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={orbitron.variable}>
       <head>
         <script src="https://hypandra.com/embed/curiosity-badge.js" type="module" />
       </head>

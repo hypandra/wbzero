@@ -60,7 +60,7 @@ export default function AppLayout({
       <div className="min-h-screen flex flex-col bg-[var(--theme-bg)] text-[var(--theme-fg)]">
         <nav className="bg-[var(--theme-card)] border-b border-[var(--theme-border)] h-14">
           <div className="h-full px-4 flex justify-between items-center">
-            <a href="/projects" className="text-xl font-bold">
+            <a href="/projects" className="text-xl font-bold font-orbitron">
               WorldBuilder:Zero
             </a>
             <div className="flex items-center gap-4">
