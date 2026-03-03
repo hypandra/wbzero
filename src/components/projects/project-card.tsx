@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Trash2, GripVertical } from 'lucide-react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
   AlertDialog,
@@ -28,6 +30,16 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onDelete }: ProjectCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: project.id,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
   const date = new Date(project.updated_at)
   const formattedDate = date.toLocaleDateString('en-US', {
     month: 'short',
@@ -46,15 +58,27 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
   }
 
   return (
-    <div className="relative group">
+    <div ref={setNodeRef} style={style} className="relative group">
+      {/* Drag handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="absolute top-3 left-3 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing z-10"
+        onClick={(e) => e.preventDefault()}
+        aria-label="Drag to reorder"
+      >
+        <GripVertical size={15} />
+      </button>
+
       <Link href={`/projects/${project.id}`}>
         <Card className="hover:border-primary transition-colors cursor-pointer">
-          <CardHeader>
+          <CardHeader className="pl-9">
             <CardTitle className="text-lg pr-8">{project.title}</CardTitle>
             <CardDescription>Updated {formattedDate}</CardDescription>
           </CardHeader>
         </Card>
       </Link>
+
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button
