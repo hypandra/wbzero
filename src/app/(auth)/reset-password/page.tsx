@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
       </svg>
       <div className="max-w-md w-full space-y-8 p-8 relative z-10">
         <div className="text-center">
-          <h1 className="text-5xl font-light font-orbitron text-center tracking-wide pl-[0.025em]">WorldBuilder:Zero</h1>
+          <h1 className="text-5xl font-light font-orbitron text-center">WorldBuilder:Zero</h1>
         </div>
         <ResetPasswordForm />
         <div className="text-center">
