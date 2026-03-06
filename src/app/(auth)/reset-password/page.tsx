@@ -1,8 +1,10 @@
-import { ProjectList } from '@/components/projects/project-list'
+import Link from 'next/link'
+import { ResetPasswordForm } from '@/components/auth/reset-password-form'
+import { ArrowLeft } from 'lucide-react'
 
-export default function ProjectsPage() {
+export default function ResetPasswordPage() {
   return (
-    <div className="dark -mx-6 -my-6 min-h-full relative overflow-hidden bg-gradient-to-br from-[#05030f] via-[#0e0520] to-[#000000] text-white">
+    <div className="dark min-h-screen flex items-center justify-center bg-gradient-to-br from-[#05030f] via-[#0e0520] to-[#000000] text-white relative overflow-hidden">
       {/* Center glow */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(100,60,200,0.18) 0%, transparent 65%)' }} />
       {/* Stars */}
@@ -34,8 +36,16 @@ export default function ProjectsPage() {
           )
         })}
       </svg>
-      <div className="relative z-10 px-6 py-6 max-w-4xl mx-auto space-y-6">
-        <ProjectList />
+      <div className="max-w-md w-full space-y-8 p-8 relative z-10">
+        <div className="text-center">
+          <h1 className="text-5xl font-light font-orbitron text-center">WorldBuilder:Zero</h1>
+        </div>
+        <ResetPasswordForm />
+        <div className="text-center">
+          <Link href="/login" className="inline-flex items-center gap-1 text-sm text-white/50 hover:text-white/90 transition-colors duration-200">
+            <ArrowLeft size={14} /> Back to login
+          </Link>
+        </div>
       </div>
     </div>
   )

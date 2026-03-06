@@ -8,7 +8,7 @@ import { LeftNavTree } from '@/components/layout/left-nav-tree'
 import { RightContextPanel } from '@/components/layout/right-context-panel'
 import { ProjectThemeProvider } from '@/components/theme/project-theme-provider'
 import { Loading } from '@/components/ui/spinner'
-import { PanelRight, Layers, ImageIcon, Sparkles, Palette } from 'lucide-react'
+import { PanelRight, Layers, ImageIcon, Sparkles, Palette, UserCircle } from 'lucide-react'
 
 export default function AppLayout({
   children,
@@ -60,8 +60,8 @@ export default function AppLayout({
       <div className="min-h-screen flex flex-col bg-[var(--theme-bg)] text-[var(--theme-fg)]">
         <nav className="bg-[var(--theme-card)] border-b border-[var(--theme-border)] h-14">
           <div className="h-full px-4 flex justify-between items-center">
-            <a href="/projects" className="text-xl font-bold">
-              world builder zero
+            <a href="/projects" className="text-xl font-bold font-orbitron">
+              WorldBuilder:Zero
             </a>
             <div className="flex items-center gap-4">
               <button
@@ -75,6 +75,13 @@ export default function AppLayout({
               >
                 <PanelRight className="w-5 h-5" />
               </button>
+              <a
+                href="/profile"
+                title="Profile"
+                className="p-1.5 rounded transition-colors text-[var(--theme-muted)] hover:text-[var(--theme-fg)]"
+              >
+                <UserCircle className="w-5 h-5" />
+              </a>
               <span className="text-sm text-[var(--theme-muted)]">{session.user.email}</span>
               <button
                 onClick={async () => {
@@ -92,7 +99,7 @@ export default function AppLayout({
           <aside className="w-64 bg-[var(--theme-card)] border-r border-[var(--theme-border)] overflow-y-auto">
             <LeftNavTree />
           </aside>
-          <main className="flex-1 overflow-y-auto bg-[var(--theme-bg)]">
+          <main className="flex-1 overflow-y-auto">
             <div className="px-6 py-6">{children}</div>
           </main>
           <aside

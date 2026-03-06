@@ -1,12 +1,17 @@
 import type { Metadata } from 'next'
-import { Hedvig_Letters_Serif } from 'next/font/google'
+import { Orbitron, Hedvig_Letters_Serif } from 'next/font/google'
 import { ErrorAlertProvider } from '@/components/error-alert-provider'
 import './globals.css'
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  variable: '--font-orbitron',
+})
 
 const hedvig = Hedvig_Letters_Serif({ subsets: ['latin'], weight: '400' })
 
 export const metadata: Metadata = {
-  title: 'WBZero',
+  title: 'WorldBuilder:Zero',
   description: 'Writing and art organization tool',
 }
 
@@ -16,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={orbitron.variable}>
       <body>
         <ErrorAlertProvider>
           {children}
