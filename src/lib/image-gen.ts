@@ -154,7 +154,7 @@ export async function generateImage(sourceText: string, promptTemplate: string):
 
 export async function refineImage(imageBuffer: Buffer, refinementPrompt: string): Promise<Buffer> {
   const formData = new FormData()
-  formData.append('image', new Blob([imageBuffer], { type: 'image/png' }), 'source.png')
+  formData.append('image', new Blob([new Uint8Array(imageBuffer)], { type: 'image/png' }), 'source.png')
   formData.append('prompt', refinementPrompt)
   formData.append('model', 'gpt-image-1')
   formData.append('size', '1024x1024')
